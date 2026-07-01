@@ -18,3 +18,13 @@
 - 次は実用的なもの作りたい
 
 **Link to work:** [tweet](https://x.com/dekapurin_main/status/2071951594921566337?s=20)
+
+### R1D2: 2026.7.1
+
+**Today's Progress**: Rustでgitコマンドパースまで実装
+
+**Thoughts:**: 
+- 引数の受け取りを学んだ
+- powershellでコマンドをrustから実装する方法を学んだ
+
+**Link to work:** [tweet](https://x.com/dekapurin_main/status/2072303322682564849?s=20)
