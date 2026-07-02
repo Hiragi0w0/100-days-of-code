@@ -29,7 +29,7 @@
 
 **Link to work:** [tweet](https://x.com/dekapurin_main/status/2072303322682564849?s=20)
 
-### R1D2: 2026.7.2
+### R1D3: 2026.7.2
 
 **Today's Progress**: Rustでgit reflogの差分をチェックできるツール作成
 
