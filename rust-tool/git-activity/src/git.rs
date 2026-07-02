@@ -1,7 +1,7 @@
 use std::process::Command;
 use std::path::PathBuf;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ReflogRes
 {
     pub sha: String,
