@@ -28,3 +28,14 @@
 - powershellでコマンドをrustから実装する方法を学んだ
 
 **Link to work:** [tweet](https://x.com/dekapurin_main/status/2072303322682564849?s=20)
+
+### R1D3: 2026.7.2
+
+**Today's Progress**: Rustでgit reflogの差分をチェックできるツール作成
+
+**Thoughts:**: 
+- 差分取ったりファイルの入出力したり基礎を一通り通れた気がする
+- 次はサーバーのバックエンド処理をやりたい
+
+**Link to work:** [tweet](https://x.com/i/status/2072722088604184766)
+
