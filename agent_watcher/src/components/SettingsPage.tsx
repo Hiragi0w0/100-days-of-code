@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { invoke } from '@tauri-apps/api/core';
 import { Settings, Check, Loader2, Save } from 'lucide-react';
 import { AppSettings, ThemeKind } from '../types';
 
@@ -16,6 +17,8 @@ export default function SettingsPage({ onSettingsChange }: SettingsPageProps) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [checkingTauri, setCheckingTauri] = useState(false);
+  const [tauriStatus, setTauriStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   useEffect(() => {
     fetch('/api/settings')
@@ -61,6 +64,20 @@ export default function SettingsPage({ onSettingsChange }: SettingsPageProps) {
       console.error('Failed to save settings:', err);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const checkTauriBackend = async () => {
+    setCheckingTauri(true);
+    setTauriStatus('idle');
+    try {
+      await invoke('cmd_health_check');
+      setTauriStatus('success');
+    } catch (err) {
+      console.error('Failed to connect to Tauri backend:', err);
+      setTauriStatus('error');
+    } finally {
+      setCheckingTauri(false);
     }
   };
 
@@ -149,6 +166,33 @@ export default function SettingsPage({ onSettingsChange }: SettingsPageProps) {
               <Save className="w-3.5 h-3.5" />
             )}
             保存
+          </button>
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-slate-100 dark:border-slate-800 pt-6">
+          <div className="space-y-1">
+            <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+              Tauriバックエンド接続確認
+            </p>
+            {tauriStatus === 'success' && (
+              <p className="text-xs text-emerald-600 dark:text-emerald-400">
+                Tauriバックエンドに接続できました
+              </p>
+            )}
+            {tauriStatus === 'error' && (
+              <p className="text-xs text-rose-600 dark:text-rose-400">
+                Tauriバックエンドに接続できませんでした
+              </p>
+            )}
+          </div>
+          <button
+            id="check-tauri-backend-btn"
+            onClick={checkTauriBackend}
+            disabled={checkingTauri}
+            className="px-4 py-2 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-lg transition-colors hover:bg-slate-50 dark:hover:bg-zinc-800 disabled:opacity-50 inline-flex items-center justify-center gap-1.5"
+          >
+            {checkingTauri && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+            確認
           </button>
         </div>
       </div>
