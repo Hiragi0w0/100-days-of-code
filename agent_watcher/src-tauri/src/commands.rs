@@ -1,3 +1,8 @@
+use crate::operate_file::operate_md;
+use crate::operate_file::operate_md::MDContents;
+
+use std::path::PathBuf;
+
 use crate::models::{
     AppSettings, ConfigFile, FileContent, HealthCheckResponse, NewsItem, SaveResult,
     StandardFileType, ToolKind,
@@ -17,6 +22,24 @@ pub fn cmd_health_check() -> HealthCheckResponse {
 
 #[tauri::command]
 pub fn cmd_cfg_load_files() -> Result<Vec<ConfigFile>, String> {
+    let root_path = dirs::home_dir().ok_or_else(|| "ルートパスの取得に失敗しました".to_string())?;
+
+    // Codex　読込
+    let codex_path = root_path.join(".codex");
+
+    let mut path_vec: Vec<PathBuf> = Vec::new();
+    path_vec.push(codex_path.join("AGENTS.md"));
+
+    let mut results: Vec<MDContents> = Vec::new();
+    for path in path_vec
+    {
+        let res  = operate_md::load_filedata(path)?;
+        results.push(res);
+    }
+
+    // Claude　読込
+
+
     Err(NOT_IMPLEMENTED.to_string())
 }
 

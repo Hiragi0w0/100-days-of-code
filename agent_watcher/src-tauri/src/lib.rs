@@ -1,5 +1,6 @@
 mod commands;
 mod models;
+mod operate_file;
 
 pub fn run() {
     tauri::Builder::default()
