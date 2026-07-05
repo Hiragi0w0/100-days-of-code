@@ -39,12 +39,22 @@
 
 **Link to work:** [tweet](https://x.com/i/status/2072722088604184766)
 
-### R1D4s: 2026.7.4
+### R1D4: 2026.7.4
 
 **Today's Progress**: TauriのRust Commandの形だけ実装と少しだけloadを実装
 
 **Thoughts:**: 
 - フロントからTauriを実行する仕組みだけ実装した。
 - 読込処理を実装したが、色々エラーが出て難しかった。
+
+**Link to work:** [tweet](https://x.com/dekapurin_main/status/2073363324285444122?s=20)
+
+### R1D5: 2026.7.５
+
+**Today's Progress**: Codex関連のファイル読込実装
+
+**Thoughts:**: 
+- Rustのファイル読込操作の応用的な部分に触れれた
+- Rustにまだ慣れない
 
 **Link to work:** [tweet](https://x.com/dekapurin_main/status/2073363324285444122?s=20)
