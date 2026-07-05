@@ -1,5 +1,5 @@
-use crate::operate_file::operate_md;
-use crate::operate_file::operate_md::MDContents;
+use crate::operate_file::operate_file;
+use crate::operate_file::operate_file::FileContents;
 
 use std::path::PathBuf;
 
@@ -29,16 +29,38 @@ pub fn cmd_cfg_load_files() -> Result<Vec<ConfigFile>, String> {
 
     let mut path_vec: Vec<PathBuf> = Vec::new();
     path_vec.push(codex_path.join("AGENTS.md"));
+    path_vec.push(codex_path.join("AGENTS.override.md"));
+    path_vec.push(codex_path.join("config.toml"));
 
-    let mut results: Vec<MDContents> = Vec::new();
+    let mut results: Vec<FileContents> = Vec::new();
     for path in path_vec
     {
-        let res  = operate_md::load_filedata(path)?;
+        let res  = operate_file::load_filedata(path)?;
         results.push(res);
     }
 
-    // Claude　読込
+    let agents_path = codex_path.join("agents");
+    let agents_res = operate_file::load_agents_file(agents_path);
 
+
+    let skill_path = codex_path.join("skills");
+    let skill_res = operate_file::load_skill_file(skill_path);
+
+    // Claude　読込
+    let codex_path = root_path.join(".claude");
+
+    let mut path_vec: Vec<PathBuf> = Vec::new();
+    path_vec.push(codex_path.join("CLAUDE.md"));
+    path_vec.push(codex_path.join("setting.json"));
+    path_vec.push(codex_path.join("agents"));
+    path_vec.push(codex_path.join("skills"));
+
+    let mut results: Vec<FileContents> = Vec::new();
+    for path in path_vec
+    {
+        let res  = operate_file::load_filedata(path)?;
+        results.push(res);
+    }
 
     Err(NOT_IMPLEMENTED.to_string())
 }
