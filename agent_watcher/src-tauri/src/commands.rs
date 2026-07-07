@@ -27,40 +27,42 @@ pub fn cmd_cfg_load_files() -> Result<Vec<ConfigFile>, String> {
     // Codex　読込
     let codex_path = root_path.join(".codex");
 
-    let mut path_vec: Vec<PathBuf> = Vec::new();
-    path_vec.push(codex_path.join("AGENTS.md"));
-    path_vec.push(codex_path.join("AGENTS.override.md"));
-    path_vec.push(codex_path.join("config.toml"));
+    let mut codexpath_vec: Vec<PathBuf> = Vec::new();
+    codexpath_vec.push(codex_path.join("AGENTS.md"));
+    codexpath_vec.push(codex_path.join("AGENTS.override.md"));
+    codexpath_vec.push(codex_path.join("config.toml"));
 
-    let mut results: Vec<FileContents> = Vec::new();
-    for path in path_vec
+    let mut codex_results: Vec<FileContents> = Vec::new();
+    for path in codexpath_vec
     {
         let res  = operate_file::load_filedata(path)?;
-        results.push(res);
+        codex_results.push(res);
     }
 
-    let agents_path = codex_path.join("agents");
-    let agents_res = operate_file::load_agents_file(agents_path);
+    let codex_agents_path = codex_path.join("agents");
+    let codex_agents_res = operate_file::load_agents_file(codex_agents_path);
 
-
-    let skill_path = codex_path.join("skills");
-    let skill_res = operate_file::load_skill_file(skill_path);
+    let codex_skill_path = codex_path.join("skills");
+    let codex_skill_res = operate_file::load_skill_file(codex_skill_path);
 
     // Claude　読込
-    let codex_path = root_path.join(".claude");
+    let claude_path = root_path.join(".claude");
 
-    let mut path_vec: Vec<PathBuf> = Vec::new();
-    path_vec.push(codex_path.join("CLAUDE.md"));
-    path_vec.push(codex_path.join("setting.json"));
-    path_vec.push(codex_path.join("agents"));
-    path_vec.push(codex_path.join("skills"));
-
-    let mut results: Vec<FileContents> = Vec::new();
-    for path in path_vec
+    let mut claudepath_vec: Vec<PathBuf> = Vec::new();
+    claudepath_vec.push(claude_path.join("CLAUDE.md"));
+    claudepath_vec.push(claude_path.join("setting.json"));
+    let mut claude_results: Vec<FileContents> = Vec::new();
+    for path in claudepath_vec
     {
         let res  = operate_file::load_filedata(path)?;
-        results.push(res);
+        claude_results.push(res);
     }
+
+    let claude_agents_path = claude_path.join("agents");
+    let claude_agents_res = operate_file::load_agents_file(claude_agents_path);
+
+    let claude_skill_path = claude_path.join("skills");
+    let claude_skill_res = operate_file::load_skill_file(claude_skill_path)
 
     Err(NOT_IMPLEMENTED.to_string())
 }
