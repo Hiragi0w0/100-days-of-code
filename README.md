@@ -58,3 +58,13 @@
 - Rustにまだ慣れない
 
 **Link to work:** [tweet](https://x.com/dekapurin_main/status/2073363324285444122?s=20)
+
+### R1D6: 2026.7.6
+
+**Today's Progress**: loal_config_filesの書き換え
+
+**Thoughts:**: 
+- load_config_filesの中でreadしてたので書き換え
+- .map(~)とかがいまだにわからない
+
+**Link to work:**
