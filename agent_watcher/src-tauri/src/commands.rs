@@ -62,7 +62,7 @@ pub fn cmd_cfg_load_files() -> Result<Vec<ConfigFile>, String> {
     let claude_agents_res = operate_file::load_agents_file(claude_agents_path);
 
     let claude_skill_path = claude_path.join("skills");
-    let claude_skill_res = operate_file::load_skill_file(claude_skill_path)
+    let claude_skill_res = operate_file::load_skill_file(claude_skill_path);
 
     Err(NOT_IMPLEMENTED.to_string())
 }
