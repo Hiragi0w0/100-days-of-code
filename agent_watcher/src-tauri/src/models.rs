@@ -9,14 +9,14 @@ pub struct HealthCheckResponse {
     pub backend: String,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum ToolKind {
     Codex,
     Claude,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum ConfigFileKind {
     Instruction,

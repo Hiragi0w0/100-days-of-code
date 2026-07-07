@@ -1,5 +1,4 @@
 use crate::operate_file::operate_file;
-use crate::operate_file::operate_file::FileContents;
 
 use std::path::PathBuf;
 
@@ -9,6 +8,8 @@ use crate::models::{
 };
 
 const NOT_IMPLEMENTED: &str = "not implemented: this Tauri command is registered for learning only";
+
+// コマンド
 
 #[tauri::command]
 pub fn cmd_health_check() -> HealthCheckResponse {
@@ -24,45 +25,102 @@ pub fn cmd_health_check() -> HealthCheckResponse {
 pub fn cmd_cfg_load_files() -> Result<Vec<ConfigFile>, String> {
     let root_path = dirs::home_dir().ok_or_else(|| "ルートパスの取得に失敗しました".to_string())?;
 
+    let mut results: Vec<ConfigFile> = Vec::new();
+
     // Codex　読込
     let codex_path = root_path.join(".codex");
 
-    let mut codexpath_vec: Vec<PathBuf> = Vec::new();
-    codexpath_vec.push(codex_path.join("AGENTS.md"));
-    codexpath_vec.push(codex_path.join("AGENTS.override.md"));
-    codexpath_vec.push(codex_path.join("config.toml"));
+    results.push(
+        make_config_file
+        (
+            "codex-agents-md",
+            ToolKind::Codex,
+            "AGENTS.md",
+            codex_path.join("AGENTS.md"),
+            ConfigKind::Instruction,
+        )
+    )
 
-    let mut codex_results: Vec<FileContents> = Vec::new();
-    for path in codexpath_vec
-    {
-        let res  = operate_file::load_filedata(path)?;
-        codex_results.push(res);
-    }
+    results.push(
+        make_config_file
+        (
+            "codex-agents-override-md",
+            ToolKind::Codex,
+            "AGENTS.override.md",
+            codex_path.join("AGENTS.override.md"),
+            ConfigKind::Instruction,
+        )
+    )
 
-    let codex_agents_path = codex_path.join("agents");
-    let codex_agents_res = operate_file::load_agents_file(codex_agents_path);
+    results.push(
+        make_config_file
+        (
+            "codex-config-toml",
+            ToolKind::Codex,
+            "config.toml",
+            codex_path.join("config.toml"),
+            ConfigKind::Instruction,
+        )
+    )
 
-    let codex_skill_path = codex_path.join("skills");
-    let codex_skill_res = operate_file::load_skill_file(codex_skill_path);
+    results.push(
+        load_child_files
+        (
+            "codex-config-toml",
+            ToolKind::Codex,
+            "config.toml",
+            codex_path.join("config.toml"),
+            ConfigKind::Instruction,
+        )
+    )
 
-    // Claude　読込
-    let claude_path = root_path.join(".claude");
+    results.push(make_config_file(
+        "claude-md",
+        ToolKind::Claude,
+        "CLAUDE.md",
+        claude_path.join("CLAUDE.md"),
+        ConfigFileKind::Instruction,
+    ));
 
-    let mut claudepath_vec: Vec<PathBuf> = Vec::new();
-    claudepath_vec.push(claude_path.join("CLAUDE.md"));
-    claudepath_vec.push(claude_path.join("setting.json"));
-    let mut claude_results: Vec<FileContents> = Vec::new();
-    for path in claudepath_vec
-    {
-        let res  = operate_file::load_filedata(path)?;
-        claude_results.push(res);
-    }
+    results.push(make_config_file(
+        "claude-settings-json",
+        ToolKind::Claude,
+        "settings.json",
+        claude_path.join("settings.json"),
+        ConfigFileKind::Config,
+    ));
 
-    let claude_agents_path = claude_path.join("agents");
-    let claude_agents_res = operate_file::load_agents_file(claude_agents_path);
+    push_child_files(
+        &mut results,
+        ToolKind::Codex,
+        &codex_path,
+        "agents",
+        ConfigFileKind::Agent,
+    )?;
 
-    let claude_skill_path = claude_path.join("skills");
-    let claude_skill_res = operate_file::load_skill_file(claude_skill_path);
+    push_child_files(
+        &mut results,
+        ToolKind::Codex,
+        &codex_path,
+        "skills",
+        ConfigFileKind::Skill,
+    )?;
+
+    push_child_files(
+        &mut results,
+        ToolKind::Claude,
+        &claude_path,
+        "agents",
+        ConfigFileKind::Agent,
+    )?;
+
+    push_child_files(
+        &mut results,
+        ToolKind::Claude,
+        &claude_path,
+        "skills",
+        ConfigFileKind::Skill,
+    )?;
 
     Err(NOT_IMPLEMENTED.to_string())
 }
@@ -115,4 +173,122 @@ pub fn cmd_app_load_settings() -> Result<AppSettings, String> {
 pub fn cmd_app_save_settings(settings: AppSettings) -> Result<SaveResult, String> {
     let _ = settings;
     Err(NOT_IMPLEMENTED.to_string())
+}
+
+// 諸関数
+// ConfigFileクラスを作成
+//　引数：ConfigFileクラスのメンバ変数
+fn make_config_file(id: &str,
+                    tool: ToolKind,
+                    label: &str,
+                    path: PathBuf,
+                    kind: ConfigFileKind,)->ConfigFile
+{
+    ConfigFile
+    {
+        id: id.to_string(),
+        tool,
+        label: label.to_string(),
+        path: path.to_string_lossy().to_string(),
+        kind,
+        exists: path.exists(),
+    }
+}
+
+// ディレクトリ配下のファイル取得
+// 引数：results = 格納先配列
+// 引数：tool = ToolKindのenum
+// 引数：
+fn load_child_files(results: &mut Vec<ConfigFile>,
+                    tool: ToolKind,
+                    base_dir: &Path,
+                    folder_name: &str,
+                    kind: ConfigFileKind,)
+                    -> Result<(), String>
+{
+    let target_dir = base_dir.join(folder_name);
+
+    if !target_dir.exists() || !target_dir.is_dir()
+    {
+        return Ok(());
+    }
+
+    let entries = fs::read_dir(&target_dir).map_err(|err| "フォルダの読み込みに失敗しました")?;
+
+    for entry in entries
+    {
+        let entry = entry.map_err(|err| "フォルダ内の項目取得に失敗しました")?;
+
+        let file_path = entry.path();
+
+        if file_path.is_file()
+        {
+            results.push
+                (
+                make_config_file
+                (
+                    &format!("{}-{}-{}", tool_id(&tool), folder_name, file_name),
+                    tool.clone(),
+                    file_name,
+                    file_path,
+                    kind.clone(),
+                )
+            )?;
+            continue;
+        }
+
+        if entry_path.is_dir()
+        {
+                    let child_entries = fs::read_dir(&entry_path).map_err(|err| "配下の読み込みに失敗しました")?;
+
+                    for child_entry in child_entries
+                    {
+                        let child_entry = child_entry.map_err(|err| "配下の項目取得に失敗しました")?;
+
+                        let child_path = child_entry.path();
+
+                        if !child_path.is_file()
+                        {
+                            continue;
+                        }
+
+                        push_config_file_from_path
+                        (
+                            results,
+                            tool.clone(),
+                            folder_name,
+                            kind.clone(),
+                            child_path,
+                        )?;
+                    }
+                }
+    }
+
+    Ok(())
+}
+
+fn load_config_file_from_path(results: &mut Vec<ConfigFile>,
+                                tool: ToolKind,
+                                folder_name: &str,
+                                kind: ConfigFileKind,
+                                file_path: PathBuf,)
+                            -> Result<(), String> {
+    let Some(file_name) = file_path.file_name().and_then(|value| value.to_str()) else
+    {
+        return Ok(());
+    };
+
+    results.push
+    (
+        make_config_file
+        (
+            &format!("{}-{}-{}", tool_id(&tool), folder_name, file_name),
+            tool,
+            file_name,
+            file_path,
+            kind,
+        )
+    );
+
+    Ok(())
 }
